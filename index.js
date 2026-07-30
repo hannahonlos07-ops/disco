@@ -1,0 +1,182 @@
+// Discord out-of-office auto-reply bot. Watches a designated support channel
+// in every server it's in, and — outside your business hours — replies once to
+// each person with your out-of-office message. Same message + schedule for all
+// servers, all configured via environment variables (no code edits needed).
+//
+// Start:  npm start   (or: node index.js)
+
+import { Client, Events, GatewayIntentBits } from "discord.js";
+import http from "node:http";
+
+// --------------------------------------------------------------------------
+// Config (all from environment variables)
+// --------------------------------------------------------------------------
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
+if (!TOKEN) {
+  console.error("Missing DISCORD_BOT_TOKEN");
+  process.exit(1);
+}
+
+const MESSAGE =
+  process.env.OOO_MESSAGE ??
+  "Thanks for reaching out! Our team is currently out of office. We'll get back to you as soon as we're back during business hours.";
+
+const TIMEZONE = process.env.OOO_TIMEZONE ?? "America/New_York";
+const START_HOUR = Number(process.env.OOO_START_HOUR ?? "9");
+const END_HOUR = Number(process.env.OOO_END_HOUR ?? "18");
+const COOLDOWN_MS = Number(process.env.OOO_COOLDOWN_MINUTES ?? "240") * 60 * 1000;
+
+// What counts as "someone asking us", i.e. when to auto-reply:
+//   mention  – only when your bot is @mentioned (least spammy)
+//   channels – any message in a support-type channel (see OOO_SUPPORT_CHANNELS)
+//   all      – any message in any channel (most aggressive; dedupe still applies)
+//   both     – mention OR support channel (default, sensible middle ground)
+const TRIGGER = (process.env.OOO_TRIGGER ?? "both").toLowerCase();
+
+// Channel matching: by name (case-insensitive, e.g. "support") and/or by
+// exact channel ID for precision.
+const CHANNEL_NAMES = (process.env.OOO_SUPPORT_CHANNELS ?? "support")
+  .toLowerCase()
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const CHANNEL_IDS = (process.env.OOO_SUPPORT_CHANNEL_IDS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+// 1 = Monday ... 7 = Sunday (ISO). Default Mon–Fri.
+const WEEKDAY_INDEX = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+const BUSINESS_DAYS = parseDays(process.env.OOO_BUSINESS_DAYS ?? "1-5");
+
+function parseDays(spec) {
+  const days = new Set();
+  for (const part of spec.split(",").map((s) => s.trim()).filter(Boolean)) {
+    if (part.includes("-")) {
+      const [a, b] = part.split("-").map(Number);
+      for (let d = a; d <= b; d++) days.add(d);
+    } else {
+      days.add(Number(part));
+    }
+  }
+  return days;
+}
+
+// --------------------------------------------------------------------------
+// Schedule logic (pure, timezone-aware via Intl — no libraries)
+// --------------------------------------------------------------------------
+function nowPartsInTz(date, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+  const get = (t) => parts.find((p) => p.type === t)?.value;
+  return {
+    weekday: WEEKDAY_INDEX[get("weekday")],
+    hour: Number(get("hour")),
+    minute: Number(get("minute")),
+  };
+}
+
+// Out of office = NOT (an allowed business day AND within business hours).
+export function isOutOfOffice(date = new Date()) {
+  const { weekday, hour, minute } = nowPartsInTz(date, TIMEZONE);
+  const onBusinessDay = BUSINESS_DAYS.has(weekday);
+  const minutesNow = hour * 60 + minute;
+  const withinHours = minutesNow >= START_HOUR * 60 && minutesNow < END_HOUR * 60;
+  return !(onBusinessDay && withinHours);
+}
+
+// --------------------------------------------------------------------------
+// Discord bot
+// --------------------------------------------------------------------------
+function isSupportChannel(channel) {
+  if (!channel) return false;
+  if (CHANNEL_IDS.includes(channel.id)) return true;
+  const name = (channel.name ?? "").toLowerCase();
+  return CHANNEL_NAMES.some((n) => name === n || name.includes(n));
+}
+
+// Anti-spam state:
+//   repliedThisPeriod — each person we've already answered during the CURRENT
+//     out-of-office stretch. Cleared when business hours resume, so a person
+//     gets at most one auto-reply per OOO period.
+//   lastReplyAt — a rolling cooldown floor as a secondary guard.
+const repliedThisPeriod = new Set(); // key: `${guildId}:${userId}`
+const lastReplyAt = new Map(); // key: `${guildId}:${userId}` -> timestamp
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+});
+
+// Keep the bot alive through transient gateway/network errors (discord.js
+// reconnects on its own); just log them instead of crashing the process.
+client.on(Events.Error, (err) => console.error("client error:", err?.message ?? err));
+process.on("unhandledRejection", (err) => console.error("unhandledRejection:", err?.message ?? err));
+
+// Watch for the transition back INTO business hours and reset the per-period
+// dedupe, so the next out-of-office stretch starts fresh (everyone can get one
+// reply again). Checked once a minute.
+let wasOutOfOffice = isOutOfOffice();
+setInterval(() => {
+  const out = isOutOfOffice();
+  if (wasOutOfOffice && !out) {
+    repliedThisPeriod.clear();
+    console.log("business hours resumed — auto-reply dedupe reset");
+  }
+  wasOutOfOffice = out;
+}, 60 * 1000);
+
+function shouldAutoReply(message) {
+  const mentioned =
+    !!client.user &&
+    message.mentions?.users?.has(client.user.id) &&
+    !message.mentions?.everyone; // a direct @bot, not @everyone/@here
+  const inSupport = isSupportChannel(message.channel);
+  if (TRIGGER === "mention") return mentioned;
+  if (TRIGGER === "channels") return inSupport;
+  if (TRIGGER === "all") return true;
+  return mentioned || inSupport; // "both"
+}
+
+client.on(Events.MessageCreate, async (message) => {
+  try {
+    if (message.author?.bot) return; // ignore bots (including ourselves)
+    if (!message.guild) return; // ignore DMs
+    if (!isOutOfOffice()) return; // within business hours — stay silent
+    if (!shouldAutoReply(message)) return; // not a trigger for the chosen mode
+
+    const key = `${message.guildId}:${message.author.id}`;
+    if (repliedThisPeriod.has(key)) return; // already answered this person this OOO period
+    if (Date.now() - (lastReplyAt.get(key) ?? 0) < COOLDOWN_MS) return; // cooldown floor
+    repliedThisPeriod.add(key);
+    lastReplyAt.set(key, Date.now());
+
+    await message.reply({ content: MESSAGE, allowedMentions: { repliedUser: true } });
+    console.log(`OOO reply -> #${message.channel?.name} in "${message.guild.name}" (to ${message.author.tag})`);
+  } catch (err) {
+    console.error("OOO reply failed:", err?.message ?? err);
+  }
+});
+
+client.once(Events.ClientReady, (c) => {
+  console.log(`OOO bot online as ${c.user.tag}`);
+  console.log(`  trigger mode:  ${TRIGGER} (mention | channels | all | both)`);
+  console.log(`  timezone:      ${TIMEZONE}`);
+  console.log(`  business hours: ${START_HOUR}:00–${END_HOUR}:00, days ${[...BUSINESS_DAYS].join(",")} (1=Mon…7=Sun)`);
+  console.log(`  support match:  names=[${CHANNEL_NAMES.join(", ")}] ids=[${CHANNEL_IDS.join(", ") || "none"}]`);
+  console.log(`  in ${c.guilds.cache.size} server(s); currently ${isOutOfOffice() ? "OUT of office → will auto-reply" : "within business hours → silent"}`);
+});
+
+client.login(TOKEN);
+
+// Minimal health endpoint so hosts (Railway) see a healthy service.
+http
+  .createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("discord out-of-office bot ok");
+  })
+  .listen(Number(process.env.PORT ?? "3000"));
