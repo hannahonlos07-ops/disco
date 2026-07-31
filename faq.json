@@ -4,6 +4,10 @@
     "answer": "We help life insurance agents build consistent client acquisition using structured systems, lead flow, and follow-up processes designed to scale."
   },
   {
+    "keywords": ["how do i order", "how to order", "place an order", "how do i buy", "how do i purchase", "want to order", "can i order", "how do i sign up", "start an order", "how do i place", "want to buy", "ready to order", "purchase leads"],
+    "answer": "To place an order, let us know the lead type, how many leads, and states you want — reach out in your private Discord channel or message Faith at 878-978-2574. We'll send an invoice to your email and SMS with payment instructions. Once it's paid, we will inform you of the delivery."
+  },
+  {
     "keywords": ["aged lead", "how old are", "how old is", "how old", "age of the lead", "30-90", "old leads"],
     "answer": "Aged leads are typically 30-90+ days old. They're priced lower and work best with consistent follow-up and re-engagement strategies."
   },
@@ -58,5 +62,17 @@
   {
     "keywords": ["who do i contact", "who do i talk to", "who can i talk to", "customer service", "get in touch", "talk to someone", "speak to someone", "reach out", "contact you", "having an issue", "having issues", "who's my rep", "kharyl", "message faith", "contact support", "need help with my"],
     "answer": "Reach out directly in your private Discord channel, where our Customer Service Rep, Kharyl, is available to support you. Or you can message Faith at 878-978-2574."
+  },
+  {
+    "keywords": ["are you here", "are you there", "are you online", "you online", "you around", "you awake", "hello", "hey there", "good morning", "good afternoon", "good evening", "you available"],
+    "answer": "Hey! 👋 I'm Coco, the Agent Lead Lab assistant. I can answer quick questions about ordering, lead types, pricing, delivery, invoices, and more — just ask!"
+  },
+  {
+    "keywords": ["thank you", "thanks", "thank u", "appreciate it", "appreciate you"],
+    "answer": "You're welcome! 😊 Happy to help — let me know if there's anything else."
+  },
+  {
+    "keywords": ["what can you do", "what can you help", "how can you help", "what can i ask", "what do you know", "things you can help", "what questions can"],
+    "answer": "I can help with common questions about ordering, lead types, pricing, what data comes with each lead, delivery times, invoices, refunds, cancellations, training, and how to reach our team. What would you like to know?"
   }
 ]
