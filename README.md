@@ -54,3 +54,4 @@ server. (Administrator also covers this.)
   set `OOO_SUPPORT_CHANNEL_IDS` for exact channels.
 - No privileged intents needed — it doesn't read message text, it only reacts
   to a message arriving (or a mention) while you're out.
+  
