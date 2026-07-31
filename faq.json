@@ -1,0 +1,62 @@
+[
+  {
+    "keywords": ["what does agent lead lab", "what do you help", "what do you guys", "what do you do", "what is agent lead lab", "who are you", "what does your company", "tell me about agent lead lab", "what do you actually", "what do you offer"],
+    "answer": "We help life insurance agents build consistent client acquisition using structured systems, lead flow, and follow-up processes designed to scale."
+  },
+  {
+    "keywords": ["aged lead", "how old are", "how old is", "how old", "age of the lead", "30-90", "old leads"],
+    "answer": "Aged leads are typically 30-90+ days old. They're priced lower and work best with consistent follow-up and re-engagement strategies."
+  },
+  {
+    "keywords": ["difference between", "text-verified", "text verified", "facebook form", "instant lead", "landing page", "types of leads", "lead types", "what kind of leads", "kinds of leads"],
+    "answer": "Text-Verified and Landing Page leads confirm higher intent, while Instant and Facebook Form leads focus on volume and speed. Each option fits different selling styles and budgets."
+  },
+  {
+    "keywords": ["cost more", "more expensive", "why do some leads cost", "why are some leads", "priced higher", "price difference", "why does it cost more", "why so expensive"],
+    "answer": "Price reflects intent level, verification steps, and data depth. Higher-priced leads generally require less chasing and have higher contact rates."
+  },
+  {
+    "keywords": ["what information", "what info", "what data", "comes with each lead", "what comes with", "data fields", "what's included", "what is included", "fields do i get", "info do i get"],
+    "answer": "Each lead includes specific data fields such as name, phone, email, state, age, and product-specific details like beneficiary, mortgage balance, or investment goals."
+  },
+  {
+    "keywords": ["more states", "listing states", "why states", "state selection", "select more states", "adding states", "broader state", "why does listing", "add more states", "list more states"],
+    "answer": "Broader state selection lets the system pull from stronger-performing regions, improving fulfillment speed and consistency."
+  },
+  {
+    "keywords": ["guarantee", "guaranteed", "how many sales", "promise", "certain number of sales", "will i make sales", "will i close"],
+    "answer": "No. We provide the leads. Results depend on follow-up speed, call volume, and your sales process."
+  },
+  {
+    "keywords": ["training", "do you train", "coaching", "scripts", "objection", "closing process", "sales training", "help me close", "how to sell", "resources for agents"],
+    "answer": "Yes, we provide resources and support on scripts, objections, and optimizing your closing process as well as sales training with our advisors."
+  },
+  {
+    "keywords": ["after i check out", "after checkout", "what happens after", "after i order", "after ordering", "after purchase", "once my order", "after i buy"],
+    "answer": "Your order is confirmed, states are reviewed, and lead delivery begins. You'll be notified once leads start flowing."
+  },
+  {
+    "keywords": ["go live", "goes live", "leads go live", "when do my ads", "ads launch", "when will it launch", "leads are live", "know when my leads", "everything is finalized", "when do my leads go"],
+    "answer": "We'll notify you in Discord once everything is finalized and your ads are scheduled to launch."
+  },
+  {
+    "keywords": ["how long", "how soon", "how fast", "start coming in", "when will i get my leads", "when do leads start", "when do i start getting", "1 business day", "one business day", "ach", "settlement", "delivery time", "how quickly"],
+    "answer": "Credit and debit card payments deliver leads within 1 business day. ACH payments require 7 business days for settlement before campaign launch and delivery."
+  },
+  {
+    "keywords": ["refund", "money back", "get my money", "disconnected", "bad number", "wrong number", "lead credit", "credit for disconnected"],
+    "answer": "No. All lead purchases are final once delivered — refunds are not provided. However, we do offer lead credits for disconnected phone numbers."
+  },
+  {
+    "keywords": ["cancel", "cancellation", "stop service", "stop my service", "stop payments", "end my service", "billing cycle", "before it renews", "opt out", "unsubscribe"],
+    "answer": "Please notify us before your billing cycle renews. If you don't notify us, payments will continue as scheduled and a surcharge may apply depending on the package chosen."
+  },
+  {
+    "keywords": ["invoice", "invoices", "how are invoices", "payment instructions", "how do i get billed", "where's my invoice", "where is my invoice", "how do i pay"],
+    "answer": "Invoices are sent directly to your email and SMS with payment instructions."
+  },
+  {
+    "keywords": ["who do i contact", "who do i talk to", "who can i talk to", "customer service", "get in touch", "talk to someone", "speak to someone", "reach out", "contact you", "having an issue", "having issues", "who's my rep", "kharyl", "message faith", "contact support", "need help with my"],
+    "answer": "Reach out directly in your private Discord channel, where our Customer Service Rep, Kharyl, is available to support you. Or you can message Faith at 878-978-2574."
+  }
+]
